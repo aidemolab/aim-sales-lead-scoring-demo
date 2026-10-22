@@ -1,0 +1,6 @@
+{
+  "name": "Sales Lead Scoring Dashboard",
+  "description": "AI-powered lead prioritisation, score analysis, risk flag detection, and recommended sales actions dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
