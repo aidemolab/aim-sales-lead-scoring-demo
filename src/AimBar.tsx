@@ -1,7 +1,7 @@
 const SITE = "https://aimsmartsolutions.tech/";
 const base = import.meta.env.BASE_URL;
 
-/** Pill used for the "Illustrative data" and "Not investment advice" labels. */
+/** Pill used for the "Live demo" and "Not investment advice" labels. */
 function Pill({ children, tone }: { children: string; tone: "amber" | "navy" }) {
   const cls = tone === "amber"
     ? "bg-[#FEF3C7] text-[#78350F] border-[#FCD34D]"
@@ -19,11 +19,12 @@ export function AimBar() {
         </a>
         <a href={SITE} className="text-sm font-semibold text-white hover:text-[#F59E0B] underline underline-offset-4 decoration-[#2563EB]">&larr; Back to aimsmartsolutions.tech</a>
         <span className="ml-auto flex flex-wrap items-center gap-2">
-          <Pill tone="amber">Illustrative data</Pill>
+          <Pill tone="amber">Live demo</Pill>
+          <Pill tone="amber">Fictional sample data</Pill>
           
         </span>
       </div>
-      <p className="bg-[#2563EB] text-white text-xs sm:text-sm px-4 sm:px-6 md:px-8 py-2 text-center">All figures in this demo are fictional demonstration data.</p>
+      <p className="bg-[#2563EB] text-white text-xs sm:text-sm px-4 sm:px-6 md:px-8 py-2 text-center">Sample data is fictional. Your changes are saved for 24 hours.</p>
     </div>
   );
 }
@@ -32,7 +33,7 @@ export function AimBar() {
 export function AimFooter() {
   return (
     <footer className="border-t border-[#e2e8f0] bg-[#F8FAFC] text-[#0B1F33] text-sm px-4 py-6 text-center" id="aim-footer">
-      <p className="max-w-3xl mx-auto">All figures in this demo are fictional demonstration data. A demonstration by <a className="font-semibold text-[#2563EB] underline underline-offset-2" href={SITE}>AIM Smart Solutions</a>.</p>
+      <p className="max-w-3xl mx-auto">Sample data is fictional. A demonstration by <a className="font-semibold text-[#2563EB] underline underline-offset-2" href={SITE}>AIM Smart Solutions</a>.</p>
     </footer>
   );
 }

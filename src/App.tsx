@@ -1,8 +1,5 @@
 import { useState, useMemo, Fragment } from "react";
-import { 
-  processLeads, 
-  LeadCalculated 
-} from "./data";
+import { processLeads, RAW_LEADS, LeadRaw, LeadCalculated } from "./data";
 import { 
   Building, 
   Search, 
@@ -25,9 +22,53 @@ import {
   BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useDemoRows, type Row } from "./demoApi";
+import { DemoNote, DemoToolbar, RecordModal, ConfirmModal, OwnRowActions, OwnTag, type FieldDef } from "./DemoUI";
+
+
+// ---- Live data: rows come from the database; the bundled sample rows are the offline fallback ----
+
+const FALLBACK_ROWS: Row[] = RAW_LEADS.map((l) => ({
+  id: l.leadId, session_id: null, seed_key: l.leadId, created_at: "",
+  company: l.company, industry: l.industry, contact: l.contact, lead_source: l.leadSource, budget_gbp: l.budgetGbp,
+  timeline_months: l.timelineMonths, decision_makers: l.decisionMakers, previous_engagement: l.previousEngagement,
+  pain_point_clarity: l.painPointClarity, fit_score: l.fitScore, flags_str: l.flagsStr, notes: l.notes,
+}));
+
+function leadFromRow(r: Row): LeadRaw {
+  return {
+    leadId: r.seed_key ?? r.id, rowId: r.id, own: r.session_id !== null,
+    company: r.company, industry: r.industry, contact: r.contact, leadSource: r.lead_source, budgetGbp: Number(r.budget_gbp),
+    timelineMonths: Number(r.timeline_months), decisionMakers: Number(r.decision_makers), previousEngagement: r.previous_engagement,
+    painPointClarity: r.pain_point_clarity, fitScore: Number(r.fit_score), flagsStr: r.flags_str, notes: r.notes ?? "",
+  };
+}
+
+const LEAD_FLAG_OPTIONS = ["Long sales cycle", "Many stakeholders", "Budget below average", "Single champion", "No follow-up", "Low engagement", "Low budget", "Long timeline", "Single decision maker", "No engagement", "Outside core ICP"];
+
+const LEAD_FIELDS: FieldDef[] = [
+  { key: "company", label: "Company", type: "text", maxLength: 60 },
+  { key: "industry", label: "Industry", type: "text", maxLength: 40 },
+  { key: "contact", label: "Contact name", type: "text", maxLength: 60, help: "Use a made-up name, not a real person." },
+  { key: "lead_source", label: "Lead source", type: "select", options: ["Inbound", "Outbound", "Referral", "Event"] },
+  { key: "budget_gbp", label: "Budget (£)", type: "int", min: 0, max: 5000000 },
+  { key: "timeline_months", label: "Timeline (months)", type: "int", min: 0, max: 60 },
+  { key: "decision_makers", label: "Decision makers", type: "int", min: 0, max: 30 },
+  { key: "fit_score", label: "Fit score (0 to 100)", type: "int", min: 0, max: 100 },
+  { key: "pain_point_clarity", label: "Pain point clarity", type: "select", options: ["High", "Medium", "Low"] },
+  { key: "previous_engagement", label: "Previous engagement", type: "text", maxLength: 120, help: "For example: Demo attended | Proposal requested" },
+  { key: "h_flags", label: "Risk flags (tick any that apply)", type: "heading" },
+  ...LEAD_FLAG_OPTIONS.map((f): FieldDef => ({ key: "flag:" + f, label: f, type: "check" })),
+  { key: "notes", label: "Notes (optional)", type: "textarea", maxLength: 400, required: false },
+];
+
+type FormState = { mode: "add" } | { mode: "edit"; lead: LeadCalculated } | { mode: "delete"; lead: LeadCalculated } | null;
 
 export default function App() {
-  const allLeads = useMemo(() => processLeads(), []);
+  const demo = useDemoRows("leads", FALLBACK_ROWS);
+  const allLeads = useMemo(() => processLeads(demo.rows.map(leadFromRow)), [demo.rows]);
+  const [form, setForm] = useState<FormState>(null);
+  const [notice, setNotice] = useState("");
   const [filter, setFilter] = useState<"ALL" | "HOT" | "WARM" | "COLD">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedLeadId, setExpandedLeadId] = useState<string | null>("L001"); // default first row expanded for visual impact
@@ -104,10 +145,12 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2 text-xs font-mono bg-[#f4f6f9] text-[#6b7280] px-3.5 py-1.5 rounded-lg border border-[#e2e8f0] self-start md:self-auto">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span>Illustrative data</span>
+            <span>Live demo · fictional data</span>
           </div>
         </div>
       </header>
+
+      <DemoNote status={demo.status} />
 
       <main className="max-w-7xl mx-auto px-4 md:px-12 mt-8 space-y-8">
         {/* KPI Cards Row */}
@@ -235,6 +278,49 @@ export default function App() {
           </div>
         </section>
 
+        <div className="space-y-3">
+          <DemoToolbar
+            addLabel="Add lead"
+            onAdd={() => { demo.clearError(); setForm({ mode: "add" }); }}
+            onReset={async () => { await demo.reset(); setExpandedLeadId("L001"); }}
+            busy={demo.busy} canWrite={demo.canWrite} ownCount={demo.ownCount}
+            error={form ? "" : demo.error} onDismissError={demo.clearError}
+          />
+          {notice && (
+            <p role="status" className="flex items-start justify-between gap-3 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] px-4 py-3 text-sm text-[#0c4a6e]">
+              <span>{notice}</span>
+              <button type="button" onClick={() => setNotice("")} className="font-semibold underline cursor-pointer">Dismiss</button>
+            </p>
+          )}
+        </div>
+
+        {form && form.mode !== "delete" && (
+          <RecordModal
+            title={form.mode === "add" ? "Add a lead" : `Edit ${form.lead.company}`}
+            submitLabel={form.mode === "add" ? "Add lead" : "Save changes"}
+            fields={LEAD_FIELDS}
+            initial={form.mode === "edit"
+              ? { company: form.lead.company, industry: form.lead.industry, contact: form.lead.contact, lead_source: form.lead.leadSource, budget_gbp: form.lead.budgetGbp, timeline_months: form.lead.timelineMonths, decision_makers: form.lead.decisionMakers, fit_score: form.lead.fitScore, pain_point_clarity: form.lead.painPointClarity, previous_engagement: form.lead.previousEngagement, notes: form.lead.notes, ...Object.fromEntries(LEAD_FLAG_OPTIONS.map((f) => ["flag:" + f, form.lead.flags.includes(f)])) }
+              : { company: "", industry: "", contact: "", lead_source: "Inbound", budget_gbp: 30000, timeline_months: 3, decision_makers: 2, fit_score: 70, pain_point_clarity: "Medium", previous_engagement: "Intro call done", notes: "" }}
+            busy={demo.busy} error={demo.error}
+            onClose={() => { demo.clearError(); setForm(null); }}
+            onSubmit={async (v) => {
+              const picked = LEAD_FLAG_OPTIONS.filter((f) => v["flag:" + f] === true);
+              const record: Record<string, unknown> = Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith("flag:")));
+              record.flags_str = picked.length ? picked.join(" | ") : "None";
+              const saved = form.mode === "edit" ? await demo.update((form.lead as LeadRaw).rowId!, record) : await demo.add(record);
+              if (saved) { if (form.mode === "add") setExpandedLeadId(saved.seed_key ?? saved.id); setForm(null); }
+            }}
+          />
+        )}
+        {form && form.mode === "delete" && (
+          <ConfirmModal
+            title={`Delete ${form.lead.company}?`} text="This removes your lead from the demo. It cannot be undone." confirmLabel="Delete" busy={demo.busy}
+            onCancel={() => { demo.clearError(); setForm(null); }}
+            onConfirm={async () => { if (await demo.remove((form.lead as LeadRaw).rowId!)) { setExpandedLeadId(null); setForm(null); } }}
+          />
+        )}
+
         {/* Lead Table and Subpanel Section */}
         <section className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
@@ -304,7 +390,7 @@ export default function App() {
                           <td className="py-4 px-5">
                             <div>
                               <div className="font-semibold text-sm text-[#0B1F33] group-hover:text-[#2563EB] transition-colors flex items-center gap-1.5">
-                                <span>{lead.company}</span>
+                                <span>{lead.company}<OwnTag own={Boolean(lead.own)} /></span>
                               </div>
                               <div className="text-xs text-[#6b7280] mt-0.5 flex items-center gap-1">
                                 <span className="font-medium text-[#0B1F33]/70">{lead.contact}</span>
@@ -562,11 +648,15 @@ export default function App() {
                                             <p className="text-[#6b7280] font-normal leading-relaxed">{lead.advisorText}</p>
                                           </div>
                                         </div>
-                                        <div className="pt-4 mt-6 border-t border-[#e2e8f0] flex justify-end">
-                                          <button 
+                                        <div className="pt-4 mt-6 border-t border-[#e2e8f0] flex flex-wrap items-center justify-between gap-3">
+                                          <OwnRowActions own={Boolean(lead.own)} busy={demo.busy}
+                                            onEdit={() => { demo.clearError(); setForm({ mode: "edit", lead }); }}
+                                            onDelete={() => { demo.clearError(); setForm({ mode: "delete", lead }); }} />
+                                          <button
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              alert(`Action initiated for ${lead.company}: "${lead.recommendedAction}"`);
+                                              setNotice(`Action noted for ${lead.company}: "${lead.recommendedAction}". This is a demo, so nothing is sent.`);
+                                              window.scrollTo({ top: 0, behavior: "smooth" });
                                             }}
                                             className="text-xs bg-[#2563EB] hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
                                           >
