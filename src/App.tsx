@@ -1,5 +1,6 @@
 import { useState, useMemo, Fragment } from "react";
-import { processLeads, RAW_LEADS, LeadRaw, LeadCalculated } from "./data";
+import { processLeads, RAW_LEADS, LeadRaw, LeadCalculated, LeadScenario } from "./data";
+import { AnimatedNumber, ResultTile, ScenarioPanel, SliderField, WeightSliders, type Preset } from "./Scenario";
 import { 
   Building, 
   Search, 
@@ -64,9 +65,31 @@ const LEAD_FIELDS: FieldDef[] = [
 
 type FormState = { mode: "add" } | { mode: "edit"; lead: LeadCalculated } | { mode: "delete"; lead: LeadCalculated } | null;
 
+// ---- What-if scenario (view only; never saved) ----
+interface SalesScn { weights: number[]; hot: number; win: number; calls: number }
+const DEFAULT_SALES_SCN: SalesScn = { weights: [25, 25, 25, 25], hot: 80, win: 25, calls: 5 };
+const isDefaultSalesScn = (s: SalesScn) => s.hot === 80 && s.win === 25 && s.calls === 5 && s.weights.every((w) => w === 25);
+const SALES_PRESETS: (Preset & { scn: SalesScn })[] = [
+  { id: 'aggressive-growth', label: 'Aggressive growth', hint: 'Lower the hot bar, work more leads, win more', scn: { weights: [30, 25, 25, 20], hot: 65, win: 35, calls: 12 } },
+  { id: 'quality-first', label: 'Quality over quantity', hint: 'A high hot bar, fewer calls, higher win rate', scn: { weights: [25, 40, 15, 20], hot: 88, win: 40, calls: 3 } },
+  { id: 'engagement-first', label: 'Engagement first', hint: 'Weights engagement and stakeholders most', scn: { weights: [15, 20, 15, 50], hot: 80, win: 30, calls: 8 } },
+];
+
 export default function App() {
   const demo = useDemoRows("leads", FALLBACK_ROWS);
-  const allLeads = useMemo(() => processLeads(demo.rows.map(leadFromRow)), [demo.rows]);
+  const [scn, setScn] = useState<SalesScn>(DEFAULT_SALES_SCN);
+  const [preset, setPreset] = useState<string | null>(null);
+  const scnActive = !isDefaultSalesScn(scn);
+  const leadScenario = useMemo<LeadScenario>(() => ({ weights: scn.weights, hotThreshold: scn.hot }), [scn.weights, scn.hot]);
+  const allLeads = useMemo(() => processLeads(demo.rows.map(leadFromRow), leadScenario), [demo.rows, leadScenario]);
+  const baselineLeads = useMemo(() => processLeads(demo.rows.map(leadFromRow)), [demo.rows]);
+  const baseRank = useMemo(() => new Map(baselineLeads.map((l) => [l.leadId, l.rank])), [baselineLeads]);
+  const baseCounts = useMemo(() => ({ hot: baselineLeads.filter((l) => l.scoreCategory === "HOT").length, warm: baselineLeads.filter((l) => l.scoreCategory === "WARM").length, cold: baselineLeads.filter((l) => l.scoreCategory === "COLD").length }), [baselineLeads]);
+  // The leads you would call this week: the top-ranked N.
+  const calledIds = useMemo(() => new Map(allLeads.slice(0, scn.calls).map((l, i) => [l.leadId, i + 1])), [allLeads, scn.calls]);
+  const calledBudget = useMemo(() => allLeads.filter((l) => calledIds.has(l.leadId)).reduce((a, l) => a + l.budgetGbp, 0), [allLeads, calledIds]);
+  const forecast = Math.round((calledBudget * scn.win) / 100);
+  const setScenario = (next: SalesScn, presetId: string | null = null) => { setScn(next); setPreset(presetId); };
   const [form, setForm] = useState<FormState>(null);
   const [notice, setNotice] = useState("");
   const [filter, setFilter] = useState<"ALL" | "HOT" | "WARM" | "COLD">("ALL");
@@ -153,6 +176,34 @@ export default function App() {
       <DemoNote status={demo.status} />
 
       <main className="max-w-7xl mx-auto px-4 md:px-12 mt-8 space-y-8">
+        <ScenarioPanel
+          title="Tune your pipeline"
+          subtitle="Decide what matters most when scoring leads, set how hot is hot, then see who you would call first and what the pipeline could be worth."
+          presets={SALES_PRESETS} activePreset={preset}
+          onPreset={(id) => { const p = SALES_PRESETS.find((x) => x.id === id); if (p) setScenario(p.scn, id); }}
+          onReset={() => setScenario(DEFAULT_SALES_SCN)} changed={scnActive}
+          note="How it works: the weights scale the points in the existing conversion-probability formula (Budget, Need = fit score, Timeline, Engagement). In the scenario view a lead is Hot when its probability reaches the threshold and it has a confirmed budget, a short timeline and several decision makers. Forecast = win rate x the budget of the leads you call. All leads and figures are fictional."
+          results={<>
+            <ResultTile testId="tile-hot" label="Hot leads" value={allLeads.filter((l) => l.scoreCategory === "HOT").length} format={(n) => String(Math.round(n))} delta={allLeads.filter((l) => l.scoreCategory === "HOT").length - baseCounts.hot} deltaFormat={(n) => String(Math.round(n))} goodWhen="up" tone="green" />
+            <ResultTile testId="tile-warm" label="Warm leads" value={allLeads.filter((l) => l.scoreCategory === "WARM").length} format={(n) => String(Math.round(n))} delta={allLeads.filter((l) => l.scoreCategory === "WARM").length - baseCounts.warm} deltaFormat={(n) => String(Math.round(n))} goodWhen="up" tone="amber" />
+            <ResultTile testId="tile-cold" label="Cold leads" value={allLeads.filter((l) => l.scoreCategory === "COLD").length} format={(n) => String(Math.round(n))} delta={allLeads.filter((l) => l.scoreCategory === "COLD").length - baseCounts.cold} deltaFormat={(n) => String(Math.round(n))} goodWhen="down" tone="red" />
+            <ResultTile testId="tile-forecast" label={`Forecast revenue (${scn.win}% of ${Math.min(scn.calls, allLeads.length)} calls)`} value={forecast} format={formatGBP} tone="navy" />
+          </>}
+        >
+          <div className="scn-body two">
+            <div className="scn-group">
+              <h3>Scoring weights</h3>
+              <WeightSliders idPrefix="w" names={["Budget", "Need", "Timeline", "Engagement"]} values={scn.weights} onChange={(w) => setScenario({ ...scn, weights: w })} />
+            </div>
+            <div className="scn-group">
+              <h3>Thresholds and forecast</h3>
+              <SliderField id="hot" label="Hot-lead threshold" value={scn.hot} min={50} max={95} step={1} format={(v) => `${v}% probability`} onChange={(v) => setScenario({ ...scn, hot: v })} />
+              <SliderField id="win" label="Win rate" value={scn.win} min={5} max={50} step={1} format={(v) => `${v}%`} onChange={(v) => setScenario({ ...scn, win: v })} />
+              <SliderField id="calls" label="Sales calls per week" value={scn.calls} min={1} max={20} step={1} format={(v) => `${v} calls`} onChange={(v) => setScenario({ ...scn, calls: v })} hint="The top-ranked leads get a Call badge in the table." />
+            </div>
+          </div>
+        </ScenarioPanel>
+
         {/* KPI Cards Row */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Total Leads */}
@@ -162,7 +213,7 @@ export default function App() {
               <Compass className="w-4 h-4 text-[#6b7280]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.total}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]"><AnimatedNumber value={stats.total} /></span>
               <span className="text-xs text-[#6b7280] font-medium">Sample leads</span>
             </div>
             <div className="w-full bg-[#e2e8f0] h-[3px] rounded-full mt-4">
@@ -177,7 +228,7 @@ export default function App() {
               <Zap className="w-4 h-4 text-[#166534]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.hot}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]"><AnimatedNumber value={stats.hot} /></span>
               <span className="text-xs text-[#166534] font-medium">
                 {Math.round((stats.hot / stats.total) * 100)}% of pipeline
               </span>
@@ -194,7 +245,7 @@ export default function App() {
               <TrendingUp className="w-4 h-4 text-[#854d0e]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.warm}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]"><AnimatedNumber value={stats.warm} /></span>
               <span className="text-xs text-[#854d0e] font-medium">
                 {Math.round((stats.warm / stats.total) * 100)}% of pipeline
               </span>
@@ -211,7 +262,7 @@ export default function App() {
               <AlertTriangle className="w-4 h-4 text-[#991b1b]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.cold}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]"><AnimatedNumber value={stats.cold} /></span>
               <span className="text-xs text-[#991b1b] font-medium">
                 {Math.round((stats.cold / stats.total) * 100)}% of pipeline
               </span>
@@ -373,10 +424,10 @@ export default function App() {
                     return (
                       <Fragment key={lead.leadId}>
                         {/* Primary Lead Row */}
-                        <tr
+                        <motion.tr layout="position" transition={{ type: "spring", stiffness: 300, damping: 32 }}
                           onClick={() => toggleRow(lead.leadId)}
                           className={`group cursor-pointer transition-colors ${
-                            isExpanded ? "bg-[#f0f4ff]" : "hover:bg-[#f0f4ff]/40 bg-white"
+                            isExpanded ? "bg-[#f0f4ff]" : calledIds.has(lead.leadId) ? "bg-[#FFFBEB] hover:bg-[#FEF3C7]" : "hover:bg-[#f0f4ff]/40 bg-white"
                           }`}
                         >
                           {/* Rank */}
@@ -384,13 +435,16 @@ export default function App() {
                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#f4f6f9] group-hover:bg-[#2563EB]/10 text-xs font-semibold text-[#0B1F33]">
                               {lead.rank}
                             </span>
+                            {scnActive && baseRank.get(lead.leadId) !== undefined && baseRank.get(lead.leadId) !== lead.rank && (
+                              <span className={`rank-chip ${lead.rank < (baseRank.get(lead.leadId) ?? 0) ? "up" : "down"}`} title="Rank change versus the baseline">{lead.rank < (baseRank.get(lead.leadId) ?? 0) ? "▲" : "▼"}{Math.abs(lead.rank - (baseRank.get(lead.leadId) ?? 0))}</span>
+                            )}
                           </td>
 
                           {/* Company */}
                           <td className="py-4 px-5">
                             <div>
                               <div className="font-semibold text-sm text-[#0B1F33] group-hover:text-[#2563EB] transition-colors flex items-center gap-1.5">
-                                <span>{lead.company}<OwnTag own={Boolean(lead.own)} /></span>
+                                <span>{lead.company}<OwnTag own={Boolean(lead.own)} />{calledIds.has(lead.leadId) && <span className="call-badge">Call #{calledIds.get(lead.leadId)}</span>}</span>
                               </div>
                               <div className="text-xs text-[#6b7280] mt-0.5 flex items-center gap-1">
                                 <span className="font-medium text-[#0B1F33]/70">{lead.contact}</span>
@@ -407,7 +461,7 @@ export default function App() {
 
                           {/* Score Badge */}
                           <td className="py-4 px-4">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold border ${getScoreBadgeStyles(lead.scoreCategory)}`}>
+                            <span className={`tier-badge inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold border ${getScoreBadgeStyles(lead.scoreCategory)}`}>
                               {lead.scoreCategory}
                             </span>
                           </td>
@@ -427,7 +481,7 @@ export default function App() {
                             <div className="w-32">
                               <div className="flex items-center justify-between gap-2 mb-1.5">
                                 <span className="text-xs font-mono font-semibold text-[#0B1F33]">
-                                  {lead.conversionProbability}%
+                                  <AnimatedNumber value={lead.conversionProbability} duration={0.5} />%
                                 </span>
                               </div>
                               <div className="w-full bg-[#e2e8f0] h-[6px] rounded-[3px] overflow-hidden">
@@ -485,7 +539,7 @@ export default function App() {
                               <ChevronDown className="w-4 h-4 text-[#6b7280]" />
                             )}
                           </td>
-                        </tr>
+                        </motion.tr>
 
                         {/* Expandable Detail Panel */}
                         <AnimatePresence initial={false}>

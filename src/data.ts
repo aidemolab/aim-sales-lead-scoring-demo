@@ -37,6 +37,14 @@ export interface LeadCalculated extends LeadRaw {
   summarySentence: string;
 }
 
+// What-if scenario (view only). Weights scale the groups of points in the conversion-probability formula:
+// Budget = budget bonus and low-budget penalty, Need = how far the fit score is from 50, Timeline = timeline
+// bonus and long-cycle penalty, Engagement = decision-maker bonus and engagement / single-champion penalties.
+// At the equal default weights and an 80% hot threshold the original scoring is used unchanged.
+export interface LeadScenario { weights: number[]; hotThreshold: number } // weights: Budget, Need, Timeline, Engagement
+export const DEFAULT_LEAD_SCENARIO: LeadScenario = { weights: [25, 25, 25, 25], hotThreshold: 80 };
+export const isDefaultLeadScenario = (s: LeadScenario) => s.hotThreshold === 80 && s.weights.every((w) => w === 25);
+
 export const RAW_LEADS: LeadRaw[] = [
   {
     leadId: "L001",
@@ -160,7 +168,11 @@ export const RAW_LEADS: LeadRaw[] = [
   }
 ];
 
-export function processLeads(rawLeads: LeadRaw[] = RAW_LEADS): LeadCalculated[] {
+export function processLeads(rawLeads: LeadRaw[] = RAW_LEADS, scn?: LeadScenario): LeadCalculated[] {
+  const scnOn = Boolean(scn) && !isDefaultLeadScenario(scn!);
+  const k = scnOn ? scn!.weights.map((w) => w / 25) : [1, 1, 1, 1]; // Budget, Need, Timeline, Engagement multipliers
+  const hotThreshold = scnOn ? scn!.hotThreshold : 80;
+  const r1 = (n: number) => (scnOn ? Math.round(n * 10) / 10 : n);
   const calculatedLeads = rawLeads.map(lead => {
     // Parse flags
     const flags = lead.flagsStr === "None" 
@@ -168,19 +180,19 @@ export function processLeads(rawLeads: LeadRaw[] = RAW_LEADS): LeadCalculated[] 
       : lead.flagsStr.split(" | ").map(f => f.trim());
 
     // Calculate Conversion Probability
-    const base = lead.fitScore;
-    const budgetBonus = lead.budgetGbp >= 40000 ? 5 : 0;
-    const timelineBonus = lead.timelineMonths <= 3 ? 5 : 0;
-    const decisionMakersBonus = lead.decisionMakers >= 3 ? 3 : 0;
+    const base = r1(50 + (lead.fitScore - 50) * k[1]);
+    const budgetBonus = r1(lead.budgetGbp >= 40000 ? 5 * k[0] : 0);
+    const timelineBonus = r1(lead.timelineMonths <= 3 ? 5 * k[2] : 0);
+    const decisionMakersBonus = r1(lead.decisionMakers >= 3 ? 3 * k[3] : 0);
 
     let engagementDeduction = 0;
     if (flags.includes("No engagement") || flags.includes("No follow-up") || flags.includes("Low engagement")) {
-      engagementDeduction = 8;
+      engagementDeduction = r1(8 * k[3]);
     }
 
-    const lowBudgetDeduction = flags.includes("Low budget") || flags.includes("Budget below average") ? 5 : 0;
-    const longTimelineDeduction = flags.includes("Long sales cycle") || flags.includes("Long timeline") ? 5 : 0;
-    const singleChampDeduction = flags.includes("Single decision maker") || flags.includes("Single champion") ? 3 : 0;
+    const lowBudgetDeduction = flags.includes("Low budget") || flags.includes("Budget below average") ? r1(5 * k[0]) : 0;
+    const longTimelineDeduction = flags.includes("Long sales cycle") || flags.includes("Long timeline") ? r1(5 * k[2]) : 0;
+    const singleChampDeduction = flags.includes("Single decision maker") || flags.includes("Single champion") ? r1(3 * k[3]) : 0;
 
     const finalScoreBeforeCap = base + budgetBonus + timelineBonus + decisionMakersBonus 
       - engagementDeduction - lowBudgetDeduction - longTimelineDeduction - singleChampDeduction;
@@ -212,7 +224,12 @@ export function processLeads(rawLeads: LeadRaw[] = RAW_LEADS): LeadCalculated[] 
                    conversionProbability >= 55 && 
                    conversionProbability <= 79;
 
-    if (isHot) {
+    // Scenario view: conversion probability decides, using the hot-threshold slider.
+    const scnHot = conversionProbability >= hotThreshold && lead.budgetGbp >= 30000 && lead.timelineMonths <= 4 && lead.decisionMakers >= 2;
+    const scnWarm = !scnHot && lead.fitScore >= 60 && conversionProbability >= hotThreshold - 25;
+    if (scnOn) {
+      scoreCategory = scnHot ? 'HOT' : scnWarm ? 'WARM' : 'COLD';
+    } else if (isHot) {
       scoreCategory = 'HOT';
     } else if (lead.fitScore >= 60 && lead.fitScore <= 79) {
       scoreCategory = 'WARM';
@@ -225,7 +242,7 @@ export function processLeads(rawLeads: LeadRaw[] = RAW_LEADS): LeadCalculated[] 
     let advisorText = "";
     let summarySentence = "";
 
-    switch (lead.leadId) {
+    switch (scnOn ? "__scenario__" : lead.leadId) {
       case "L001":
         recommendedAction = "Schedule closing call";
         summarySentence = "Highly active closing opportunity with £45k budget and 2-month timeline.";
