@@ -166,10 +166,6 @@ export default function App() {
               Rule-based lead prioritisation and next action recommendations
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono bg-[#f4f6f9] text-[#6b7280] px-3.5 py-1.5 rounded-lg border border-[#e2e8f0] self-start md:self-auto">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span>Live demo · fictional data</span>
-          </div>
         </div>
       </header>
 
