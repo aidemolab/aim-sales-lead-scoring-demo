@@ -20,16 +20,16 @@ export type FieldDef = {
 
 const inputClass = 'w-full rounded-lg border border-[#cbd5e1] bg-white px-3 py-2 text-sm text-[#0B1F33] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20';
 
-/** The visible note about the live demo, plus connection status. */
+/** A slim note about the live demo, plus connection status. */
 export function DemoNote({ status }: { status: 'loading' | 'live' | 'offline' }) {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-6" aria-label="About this live demo" id="live-demo-note">
-      <div className="rounded-xl border border-[#F59E0B]/50 bg-[#FFFBEB] px-4 py-3 text-sm text-[#78350F] flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="inline-block rounded-full bg-[#F59E0B] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#0B1F33]">Live demo</span>
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-3" aria-label="About this live demo" id="live-demo-note">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#475569]">
+        <span aria-hidden="true">ⓘ</span>
         <span>{LIVE_NOTE}</span>
-        {status === 'loading' && <span className="text-xs font-semibold" role="status">Connecting…</span>}
-        {status === 'offline' && <span className="text-xs font-semibold text-[#991b1b]" role="status">The live service is unavailable, so you are seeing the sample data read-only.</span>}
-      </div>
+        {status === 'loading' && <span className="font-semibold" role="status">Connecting…</span>}
+        {status === 'offline' && <span className="font-semibold text-[#991b1b]" role="status">The live service is unavailable, so you are seeing the sample data read-only.</span>}
+      </p>
     </section>
   );
 }
@@ -155,7 +155,7 @@ export function RecordModal({ title, submitLabel, fields, initial, busy, error, 
       <form onSubmit={submit} className="p-5 sm:p-6 space-y-5">
         <div>
           <h2 id="form-title" className="text-xl font-bold text-[#0B1F33]">{title}</h2>
-          <p className="mt-1 text-xs text-[#475569]">{LIVE_NOTE}</p>
+          <p className="mt-1 text-xs text-[#475569]">{LIVE_NOTE} <a className="underline underline-offset-2 text-[#2563EB]" href="https://aimsmartsolutions.tech/privacy/" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {fields.map((f, i) => {
