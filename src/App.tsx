@@ -85,26 +85,26 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#1a1d27] selection:bg-[#3b82f6] selection:text-white antialiased pb-16">
+    <div className="bg-white text-[#0B1F33] selection:bg-[#2563EB] selection:text-white antialiased pb-16">
       {/* Upper Navigation/Branding Panel */}
       <header className="border-b border-[#e2e8f0] py-6 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center bg-[#3b82f6] text-white p-2 rounded-lg">
+              <span className="inline-flex items-center justify-center bg-[#2563EB] text-white p-2 rounded-lg">
                 <Target className="w-6 h-6" id="dashboard-logo-icon" />
               </span>
-              <h1 className="text-xl md:text-2xl font-semibold text-[#1a1d27] tracking-tight">
+              <h1 className="text-xl md:text-2xl font-semibold text-[#0B1F33] tracking-tight">
                 Sales Lead Scoring Dashboard
               </h1>
             </div>
             <p className="text-sm text-[#6b7280] mt-1.5 font-normal">
-              AI-powered lead prioritisation and next action recommendations
+              Rule-based lead prioritisation and next action recommendations
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono bg-[#f4f6f9] text-[#6b7280] px-3.5 py-1.5 rounded-lg border border-[#e2e8f0] self-start md:self-auto">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span>DATA ENGINE: ACTIVE</span>
+            <span>Illustrative data</span>
           </div>
         </div>
       </header>
@@ -113,17 +113,17 @@ export default function App() {
         {/* KPI Cards Row */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Total Leads */}
-          <div className="bg-[#f4f6f9] border border-[#e2e8f0] rounded-xl p-5 hover:border-[#3b82f6]/30 transition-all">
+          <div className="bg-[#f4f6f9] border border-[#e2e8f0] rounded-xl p-5 hover:border-[#2563EB]/30 transition-all">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider">Total Leads</span>
               <Compass className="w-4 h-4 text-[#6b7280]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#1a1d27]">{stats.total}</span>
-              <span className="text-xs text-[#6b7280] font-medium">100% Active</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.total}</span>
+              <span className="text-xs text-[#6b7280] font-medium">Sample leads</span>
             </div>
             <div className="w-full bg-[#e2e8f0] h-[3px] rounded-full mt-4">
-              <div className="bg-[#1a1d27] h-full rounded-full" style={{ width: "100%" }} />
+              <div className="bg-[#0B1F33] h-full rounded-full" style={{ width: "100%" }} />
             </div>
           </div>
 
@@ -134,7 +134,7 @@ export default function App() {
               <Zap className="w-4 h-4 text-[#166534]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#1a1d27]">{stats.hot}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.hot}</span>
               <span className="text-xs text-[#166534] font-medium">
                 {Math.round((stats.hot / stats.total) * 100)}% of pipeline
               </span>
@@ -151,7 +151,7 @@ export default function App() {
               <TrendingUp className="w-4 h-4 text-[#854d0e]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#1a1d27]">{stats.warm}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.warm}</span>
               <span className="text-xs text-[#854d0e] font-medium">
                 {Math.round((stats.warm / stats.total) * 100)}% of pipeline
               </span>
@@ -168,7 +168,7 @@ export default function App() {
               <AlertTriangle className="w-4 h-4 text-[#991b1b]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-[#1a1d27]">{stats.cold}</span>
+              <span className="text-2xl md:text-3xl font-bold text-[#0B1F33]">{stats.cold}</span>
               <span className="text-xs text-[#991b1b] font-medium">
                 {Math.round((stats.cold / stats.total) * 100)}% of pipeline
               </span>
@@ -199,8 +199,8 @@ export default function App() {
                   onClick={() => setFilter(btn.id as any)}
                   className={`text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 border ${
                     isActive
-                      ? "bg-[#3b82f6] text-white border-[#3b82f6] shadow-sm"
-                      : "bg-white text-[#1a1d27] border-[#e2e8f0] hover:bg-slate-50"
+                      ? "bg-[#2563EB] text-white border-[#2563EB] shadow-sm"
+                      : "bg-white text-[#0B1F33] border-[#e2e8f0] hover:bg-slate-50"
                   }`}
                 >
                   <span>{btn.label}</span>
@@ -222,12 +222,12 @@ export default function App() {
               placeholder="Search company, industry or action..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-lg border border-[#e2e8f0] bg-white focus:outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/20 transition-all"
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-lg border border-[#e2e8f0] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/20 transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6b7280] hover:text-[#1a1d27]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6b7280] hover:text-[#0B1F33]"
               >
                 Clear
               </button>
@@ -295,7 +295,7 @@ export default function App() {
                         >
                           {/* Rank */}
                           <td className="py-4 px-4 text-center">
-                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#f4f6f9] group-hover:bg-[#3b82f6]/10 text-xs font-semibold text-[#1a1d27]">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#f4f6f9] group-hover:bg-[#2563EB]/10 text-xs font-semibold text-[#0B1F33]">
                               {lead.rank}
                             </span>
                           </td>
@@ -303,11 +303,11 @@ export default function App() {
                           {/* Company */}
                           <td className="py-4 px-5">
                             <div>
-                              <div className="font-semibold text-sm text-[#1a1d27] group-hover:text-[#3b82f6] transition-colors flex items-center gap-1.5">
+                              <div className="font-semibold text-sm text-[#0B1F33] group-hover:text-[#2563EB] transition-colors flex items-center gap-1.5">
                                 <span>{lead.company}</span>
                               </div>
                               <div className="text-xs text-[#6b7280] mt-0.5 flex items-center gap-1">
-                                <span className="font-medium text-[#1a1d27]/70">{lead.contact}</span>
+                                <span className="font-medium text-[#0B1F33]/70">{lead.contact}</span>
                                 <span>•</span>
                                 <span>{lead.leadSource}</span>
                               </div>
@@ -315,7 +315,7 @@ export default function App() {
                           </td>
 
                           {/* Industry */}
-                          <td className="py-4 px-4 text-xs text-[#1a1d27] font-medium hidden md:table-cell">
+                          <td className="py-4 px-4 text-xs text-[#0B1F33] font-medium hidden md:table-cell">
                             {lead.industry}
                           </td>
 
@@ -327,7 +327,7 @@ export default function App() {
                           </td>
 
                           {/* Budget */}
-                          <td className="py-4 px-4 text-xs font-mono font-medium text-[#1a1d27]">
+                          <td className="py-4 px-4 text-xs font-mono font-medium text-[#0B1F33]">
                             {formatGBP(lead.budgetGbp)}
                           </td>
 
@@ -340,13 +340,13 @@ export default function App() {
                           <td className="py-4 px-5">
                             <div className="w-32">
                               <div className="flex items-center justify-between gap-2 mb-1.5">
-                                <span className="text-xs font-mono font-semibold text-[#1a1d27]">
+                                <span className="text-xs font-mono font-semibold text-[#0B1F33]">
                                   {lead.conversionProbability}%
                                 </span>
                               </div>
                               <div className="w-full bg-[#e2e8f0] h-[6px] rounded-[3px] overflow-hidden">
                                 <div 
-                                  className="bg-[#3b82f6] h-full rounded-[3px] transition-all duration-500" 
+                                  className="bg-[#2563EB] h-full rounded-[3px] transition-all duration-500" 
                                   style={{ width: `${lead.conversionProbability}%` }} 
                                 />
                               </div>
@@ -418,27 +418,27 @@ export default function App() {
                                     <div className="lg:col-span-4 space-y-6">
                                       <div className="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm">
                                         <h4 className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                                          <User className="w-3.5 h-3.5 text-[#3b82f6]" /> Lead Contact & Source
+                                          <User className="w-3.5 h-3.5 text-[#2563EB]" /> Lead Contact & Source
                                         </h4>
                                         <div className="space-y-3">
                                           <div>
                                             <span className="text-xs text-[#6b7280]">Key Contact Name</span>
-                                            <p className="text-sm font-semibold text-[#1a1d27] mt-0.5">{lead.contact}</p>
+                                            <p className="text-sm font-semibold text-[#0B1F33] mt-0.5">{lead.contact}</p>
                                           </div>
                                           <div>
                                             <span className="text-xs text-[#6b7280]">Lead Source Channel</span>
-                                            <p className="text-sm font-medium text-[#1a1d27] mt-0.5">{lead.leadSource}</p>
+                                            <p className="text-sm font-medium text-[#0B1F33] mt-0.5">{lead.leadSource}</p>
                                           </div>
                                           <div>
                                             <span className="text-xs text-[#6b7280]">Decision Makers Engaged</span>
-                                            <p className="text-sm font-semibold text-[#1a1d27] mt-0.5 flex items-center gap-1.5">
+                                            <p className="text-sm font-semibold text-[#0B1F33] mt-0.5 flex items-center gap-1.5">
                                               <Users className="w-4 h-4 text-[#6b7280]" />
                                               {lead.decisionMakers} stakeholders
                                             </p>
                                           </div>
                                           <div>
                                             <span className="text-xs text-[#6b7280]">Pain Point Clarity</span>
-                                            <p className="text-sm font-semibold text-[#1a1d27] mt-0.5 flex items-center gap-1.5">
+                                            <p className="text-sm font-semibold text-[#0B1F33] mt-0.5 flex items-center gap-1.5">
                                               <span className={`w-2 h-2 rounded-full ${
                                                 lead.painPointClarity === "High" ? "bg-green-500" :
                                                 lead.painPointClarity === "Medium" ? "bg-yellow-500" : "bg-red-500"
@@ -451,16 +451,16 @@ export default function App() {
 
                                       <div className="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm">
                                         <h4 className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                                          <Building className="w-3.5 h-3.5 text-[#3b82f6]" /> Engagement History
+                                          <Building className="w-3.5 h-3.5 text-[#2563EB]" /> Engagement History
                                         </h4>
-                                        <div className="space-y-3 text-xs text-[#1a1d27]">
+                                        <div className="space-y-3 text-xs text-[#0B1F33]">
                                           <div className="p-3 bg-[#f4f6f9] rounded-lg border border-[#e2e8f0]">
                                             <p className="font-semibold text-[#6b7280] uppercase text-[9px] tracking-wider">Past Activities</p>
                                             <p className="font-medium text-sm mt-1">{lead.previousEngagement}</p>
                                           </div>
                                           <div className="p-3 bg-[#f4f6f9] rounded-lg border border-[#e2e8f0]">
                                             <p className="font-semibold text-[#6b7280] uppercase text-[9px] tracking-wider">Executive Sales Notes</p>
-                                            <p className="font-medium text-xs mt-1 text-[#1a1d27]/90 leading-relaxed">{lead.notes}</p>
+                                            <p className="font-medium text-xs mt-1 text-[#0B1F33]/90 leading-relaxed">{lead.notes}</p>
                                           </div>
                                         </div>
                                       </div>
@@ -471,13 +471,13 @@ export default function App() {
                                       <div className="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm h-full flex flex-col justify-between">
                                         <div>
                                           <h4 className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                                            <Sparkles className="w-3.5 h-3.5 text-[#3b82f6]" /> Conversion Probability Logic
+                                            <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" /> Conversion Probability Logic
                                           </h4>
                                           <div className="space-y-3 font-mono text-xs">
                                             {/* Formula entries */}
                                             <div className="flex justify-between items-center py-1 border-b border-dashed border-[#e2e8f0]">
                                               <span className="text-[#6b7280]">Base (Fit Score)</span>
-                                              <span className="font-semibold text-[#1a1d27]">{lead.probabilityBreakdown.base}</span>
+                                              <span className="font-semibold text-[#0B1F33]">{lead.probabilityBreakdown.base}</span>
                                             </div>
                                             
                                             <div className="flex justify-between items-center py-1 border-b border-dashed border-[#e2e8f0] text-green-600">
@@ -527,8 +527,8 @@ export default function App() {
 
                                         <div className="pt-4 mt-6 border-t border-[#e2e8f0]">
                                           <div className="flex justify-between items-baseline mb-2">
-                                            <span className="text-xs font-semibold text-[#1a1d27]">Capped Dynamic Prob</span>
-                                            <span className="text-lg font-bold text-[#3b82f6] font-mono">{lead.conversionProbability}%</span>
+                                            <span className="text-xs font-semibold text-[#0B1F33]">Capped Dynamic Prob</span>
+                                            <span className="text-lg font-bold text-[#2563EB] font-mono">{lead.conversionProbability}%</span>
                                           </div>
                                           <p className="text-[10px] text-[#6b7280] leading-normal italic">
                                             Formula: [Base + Additions - Deductions] bounded strictly between 10% and 98%.
@@ -543,10 +543,10 @@ export default function App() {
                                         <div>
                                           <div className="flex items-center justify-between mb-4">
                                             <h4 className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider flex items-center gap-1.5">
-                                              <BookOpen className="w-3.5 h-3.5 text-[#3b82f6]" /> AI Advisor Strategy
+                                              <BookOpen className="w-3.5 h-3.5 text-[#2563EB]" /> Advisor strategy (rule-based)
                                             </h4>
-                                            <span className="inline-flex px-2 py-0.5 text-[9px] font-semibold bg-[#3b82f6]/10 text-[#3b82f6] rounded border border-[#3b82f6]/20">
-                                              ADVISOR ACTIVE
+                                            <span className="inline-flex px-2 py-0.5 text-[9px] font-semibold bg-[#2563EB]/10 text-[#2563EB] rounded border border-[#2563EB]/20">
+                                              ILLUSTRATIVE
                                             </span>
                                           </div>
                                           <div className="mb-4">
@@ -557,8 +557,8 @@ export default function App() {
                                               </span>
                                             </div>
                                           </div>
-                                          <div className="text-xs text-[#1a1d27]/90 leading-relaxed space-y-2 mt-4">
-                                            <p className="font-semibold text-xs text-[#1a1d27]">{lead.summarySentence}</p>
+                                          <div className="text-xs text-[#0B1F33]/90 leading-relaxed space-y-2 mt-4">
+                                            <p className="font-semibold text-xs text-[#0B1F33]">{lead.summarySentence}</p>
                                             <p className="text-[#6b7280] font-normal leading-relaxed">{lead.advisorText}</p>
                                           </div>
                                         </div>
@@ -568,7 +568,7 @@ export default function App() {
                                               e.stopPropagation();
                                               alert(`Action initiated for ${lead.company}: "${lead.recommendedAction}"`);
                                             }}
-                                            className="text-xs bg-[#3b82f6] hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                            className="text-xs bg-[#2563EB] hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
                                           >
                                             <span>Execute Action</span>
                                             <ArrowRight className="w-3.5 h-3.5" />
@@ -595,7 +595,7 @@ export default function App() {
         <section className="bg-[#f4f6f9] border border-[#e2e8f0] rounded-xl p-6 md:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-[#1a1d27] flex items-center gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-[#0B1F33] flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 Priority Leads This Week
               </h3>
@@ -612,7 +612,7 @@ export default function App() {
             {topOpportunities.map((lead) => (
               <div 
                 key={lead.leadId} 
-                className="bg-white border border-[#e2e8f0] hover:border-[#3b82f6]/30 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white border border-[#e2e8f0] hover:border-[#2563EB]/30 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -625,7 +625,7 @@ export default function App() {
                   </div>
 
                   <div className="mt-4">
-                    <h4 className="text-sm font-bold text-[#1a1d27] hover:text-[#3b82f6] transition-colors">
+                    <h4 className="text-sm font-bold text-[#0B1F33] hover:text-[#2563EB] transition-colors">
                       {lead.company}
                     </h4>
                     <p className="text-xs text-[#6b7280] mt-0.5">{lead.industry} • {lead.contact}</p>
@@ -634,11 +634,11 @@ export default function App() {
                   <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[#f4f6f9] pt-4">
                     <div>
                       <span className="text-[10px] text-[#6b7280] uppercase tracking-wider font-semibold block">Conversion Prob</span>
-                      <span className="text-base font-bold text-[#1a1d27] font-mono">{lead.conversionProbability}%</span>
+                      <span className="text-base font-bold text-[#0B1F33] font-mono">{lead.conversionProbability}%</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-[#6b7280] uppercase tracking-wider font-semibold block">Budget (GBP)</span>
-                      <span className="text-base font-bold text-[#1a1d27] font-mono">{formatGBP(lead.budgetGbp)}</span>
+                      <span className="text-base font-bold text-[#0B1F33] font-mono">{formatGBP(lead.budgetGbp)}</span>
                     </div>
                   </div>
 
@@ -656,7 +656,7 @@ export default function App() {
                   </div>
                   <button 
                     onClick={() => toggleRow(lead.leadId)}
-                    className="w-full text-center text-xs font-semibold bg-[#f4f6f9] hover:bg-[#3b82f6]/10 text-[#1a1d27] hover:text-[#3b82f6] py-2 rounded-lg border border-[#e2e8f0] transition-colors cursor-pointer"
+                    className="w-full text-center text-xs font-semibold bg-[#f4f6f9] hover:bg-[#2563EB]/10 text-[#0B1F33] hover:text-[#2563EB] py-2 rounded-lg border border-[#e2e8f0] transition-colors cursor-pointer"
                   >
                     View Pipeline Details
                   </button>
