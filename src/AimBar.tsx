@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Slim AIM top bar shared by the demo apps: logo (home), All demos, This service, booking button,
+// Slim AIM top bar shared by the demo apps: logo (home), All services, This service, booking button,
 // and one subtle "Interactive demo · sample data" chip with an information note.
 const SITE = 'https://aimsmartsolutions.tech';
-const SERVICE_PATH = '/services/sales-marketing/';
+const SERVICE_PATH = '/services/data-analytics/';
 const NOTE = 'Explore freely — figures are fictional. Your changes are kept for 24 hours.';
 const base = import.meta.env.BASE_URL;
 
@@ -41,7 +41,7 @@ export function AimBar() {
         <a href={`${SITE}/`} className="mr-2 flex items-center rounded-md bg-white px-2 py-1" aria-label="AIM Smart Solutions home">
           <img src={`${base}aim-logo.webp`} alt="AIM Smart Solutions" width={64} height={42} className="h-8 w-auto" />
         </a>
-        <a href={`${SITE}/live-demos/`} className="inline-flex min-h-[44px] items-center rounded-md px-3 text-sm font-semibold text-white hover:bg-white/10" data-nav="all-demos">All demos</a>
+        <a href={`${SITE}/services/`} className="inline-flex min-h-[44px] items-center rounded-md px-3 text-sm font-semibold text-white hover:bg-white/10" data-nav="all-demos">All services</a>
         <a href={`${SITE}${SERVICE_PATH}`} className="inline-flex min-h-[44px] items-center rounded-md px-3 text-sm font-semibold text-white hover:bg-white/10" data-nav="this-service">This service</a>
         <span className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <InfoChip />
