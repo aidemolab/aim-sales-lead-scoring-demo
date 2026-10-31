@@ -155,7 +155,7 @@ export function RecordModal({ title, submitLabel, fields, initial, busy, error, 
       <form onSubmit={submit} className="p-5 sm:p-6 space-y-5">
         <div>
           <h2 id="form-title" className="text-xl font-bold text-[#0B1F33]">{title}</h2>
-          <p className="mt-1 text-xs text-[#475569]">{LIVE_NOTE} <a className="underline underline-offset-2 text-[#2563EB]" href="https://aimsmartsolutions.tech/privacy/">Privacy policy</a></p>
+          <p className="mt-1 text-xs text-[#475569]">{LIVE_NOTE} <a className="underline underline-offset-2 text-[#2563EB]" href="https://aimsmartsolutions.tech/privacy/" target="_blank" rel="noopener noreferrer">Privacy policy<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a></p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {fields.map((f, i) => {
