@@ -2,7 +2,7 @@
 import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import type { Record_ } from './demoApi';
 
-export const LIVE_NOTE = "Live demo: your changes are saved for 24 hours. Sample data is fictional. Please don't enter personal or confidential information.";
+export const LIVE_NOTE = "Please don't enter personal or confidential information.";
 
 export type FieldDef = {
   key: string;
